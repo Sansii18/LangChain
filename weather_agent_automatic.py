@@ -64,52 +64,53 @@ Output: {"step": "output", "content": "The weather of New York seems to be 12 de
 
 contents = []
 
-user_query = input("> ")
-contents.append({
-    "role": "user",
-    "parts": [{"text": user_query}]
-})
-
 while True:
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        config=types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            response_mime_type="application/json",
-        ),
-        contents=contents,
-    )
-
-    parsed_output = json.loads(response.candidates[0].content.parts[0].text)
-
-    # Append model's response in Gemini format
+    user_input = input("Enter your query: ")
     contents.append({
-        "role": "model",
-        "parts": [{"text": json.dumps(parsed_output)}]
+        "role": "user",
+        "parts": [{"text": user_input}]
     })
 
-    if parsed_output.get("step") == "plan":
-        print(f"🧠 {parsed_output.get('content')}")
-        continue
+    while True:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                response_mime_type="application/json",
+            ),
+            contents=contents,
+        )
 
-    if parsed_output.get("step") == "action":
-        tool_name = parsed_output.get("function")
-        tool_input = parsed_output.get("input")
-        print(f"🔧 Calling: {tool_name}({tool_input})")
+        parsed_output = json.loads(response.candidates[0].content.parts[0].text)
 
-        if tool_name in available_tools:
-            tool_output = available_tools[tool_name]["function"](tool_input)
-        else:
-            tool_output = f"Error: tool '{tool_name}' not found"
-
-        # ✅ Correct Gemini format — role must be "user", not "assistant"
-        observation = json.dumps({"step": "observation", "output": tool_output})
+        # Append model's response in Gemini format
         contents.append({
-            "role": "user",
-            "parts": [{"text": observation}]
+            "role": "model",
+            "parts": [{"text": json.dumps(parsed_output)}]
         })
-        continue
 
-    if parsed_output.get("step") == "output":
-        print(f"🤖 {parsed_output.get('content')}")
-        break
+        if parsed_output.get("step") == "plan":
+            print(f"🧠 {parsed_output.get('content')}")
+            continue
+
+        if parsed_output.get("step") == "action":
+            tool_name = parsed_output.get("function")
+            tool_input = parsed_output.get("input")
+            print(f"🔧 Calling: {tool_name}({tool_input})")
+
+            if tool_name in available_tools:
+                tool_output = available_tools[tool_name]["function"](tool_input)
+            else:
+                tool_output = f"Error: tool '{tool_name}' not found"
+
+            # ✅ Correct Gemini format — role must be "user", not "assistant"
+            observation = json.dumps({"step": "observation", "output": tool_output})
+            contents.append({
+                "role": "user",
+                "parts": [{"text": observation}]
+            })
+            continue
+
+        if parsed_output.get("step") == "output":
+            print(f"🤖 {parsed_output.get('content')}")
+            break
