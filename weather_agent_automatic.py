@@ -4,7 +4,9 @@ import requests
 import os
 from google import genai
 from google.genai import types
+import subprocess
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -20,11 +22,20 @@ def get_weather(city: str):
         return f"the current weather in {city} is {response.text}"
     return "Something went wrong"
 
+def run_command(command: str):
+    print(f"🔨 Tool called: run_command({command})")
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    return result.stdout.strip() or result.stderr.strip() or "No output"
 
 available_tools = {
     "get_weather": {
         "function": get_weather,
         "description": "Takes a city name as string input and returns the current weather of that city"
+    },
+
+    "run_command":{
+        "function": run_command,
+        "description": "Takes a command as string input and runs it in the terminal, returns the result"
     }
 }
 
@@ -52,6 +63,7 @@ Output format:
 
 Available Tools:
 - get_weather: Takes a city name as string input and returns the current weather of that city
+- run_command: Takes a command as string input and runs it in the terminal, returns the result
 
 Example:
 User Query: What is the weather of New York?
