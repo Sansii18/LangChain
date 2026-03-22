@@ -2,8 +2,11 @@ import os
 from dotenv import load_dotenv
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import logging
 import warnings
 
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+logging.set_verbosity_error()
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -29,7 +32,7 @@ print(input_tokens)
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     token=token,
-    torch_dtype=torch.float32   # safer for Mac
+    dtype=torch.float32   # safer for Mac
 )
 
 gen_pipeline = pipeline(
@@ -40,7 +43,8 @@ gen_pipeline = pipeline(
 
 output = gen_pipeline(
     "What is the weather of New York?",
-    max_length=100
+    max_length=100,
+    # Truncation=True
 )
 
 print(output)
