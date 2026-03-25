@@ -90,7 +90,7 @@ while True:
                 system_instruction=system_prompt,
                 response_mime_type="application/json",
             ),
-            contents=contents,
+            contents=contents, #passes the history of conversation to the model for better context
         )
 
         parsed_output = json.loads(response.candidates[0].content.parts[0].text)
