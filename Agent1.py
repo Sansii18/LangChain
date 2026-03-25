@@ -13,6 +13,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+# SEARCH FOR Gemini/Claude etc OpenAI Compatible API -> To use OpenAI SDK (OpenAI ka code with Gemini or else ka API key)
 
 def get_weather(city: str):
     print(f"🔨 Tool called: get_weather({city})")
