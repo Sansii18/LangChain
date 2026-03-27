@@ -1,11 +1,10 @@
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 import dotenv
 from openai import OpenAI
-
-from langchain import QuadrantVectorStore
+from langchain_qdrant import QdrantVectorStore
 
 API_KEY = dotenv.get_key(dotenv.find_dotenv(), "GEMINI_API_KEY")
 
@@ -26,10 +25,33 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 split_docs = text_splitter.split_documents(docs) # THIS SPLITS THE DOCUMENTS INTO CHUNKS BASED ON THE TEXT RATHER THAN THE PAGE NUMBER
 
-
-vector 
-embedder = OpenAIEmbeddings(
-    model="text-embedding-004",
-    api_key=API_KEY
-    # base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+embedder = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
+
+# vector_store = QdrantVectorStore.from_documents(
+#     documents=split_docs,
+#     url="http://localhost:6333",
+#     collection_name="learning_langchain",
+#     embedding=embedder
+# )
+# vector_store.add_documents(split_docs) # THIS ADDS THE SPLIT DOCUMENTS TO THE VECTOR STORE, EACH CHUNK IS EMBEDDED AND STORED IN THE VECTOR STORE
+# print("Injection done")
+
+retriever = QdrantVectorStore.from_existing_collection(
+    url="http://localhost:6333",
+    collection_name="learning_langchain",
+    embedding=embedder
+)
+
+ 
+relevant_chunks = retriever.similarity_search(
+    query="What is FS Module?"
+)
+
+SYSTEM_PROMPT = f"""
+You are a helpful assistant that answers questions based on the following context:
+
+Context:
+{relevant_chunks} 
+"""
