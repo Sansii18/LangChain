@@ -1,0 +1,21 @@
+services:
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+  
+  neo4j:
+    url : 
+    image: neo4j:latest
+    ports:
+      - "7474:7474"  # port for UI and HTTP API
+      - "7687:7687"  # port for interaction with the database
+    environment:
+      NEO4J_AUTH: neo4j/test
+      NEO4JLAB_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: 'apoc.*,apoc.meta.*'
+      NEO4J_dbms_security_procedures_allowlist: 'apoc.*,apoc.meta.*'
+      NEO4J_apoc_import_file_enabled: 'true'
+      NEO4J_apoc_export_file_enabled: 'true'
+      NEO4J_apoc_import_file_use__neo4j__config: 'true'
