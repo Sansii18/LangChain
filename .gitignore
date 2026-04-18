@@ -5,3 +5,4 @@ venv/
 *.pdf
 Mahabharata*.pdf
 Project_Agent.py
+.DS_Store
